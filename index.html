@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+
+<html >
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="css/chessboard-0.3.0.min.css" />
+    <link rel='shortcut icon' type='image/x-icon' href='css/favicon.ico' />
+</head>
+<body>
+    <script type ="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script type ="text/javascript" src="js/chessboard-0.3.0.js"></script>
+    <script type ="text/javascript" src="js/chess.js"></script>
+    <script type ="text/javascript" src="js/webchessfunctions.js"></script>
+    <div id="board" style="width:400px"></div>
+    <script>
+        var chess = new Chess();
+        var board;
+        
+        var removeGraySquare = function () {
+            $('#board .square-55d63').css('background', '');
+        };
+        var graySquare = function (square) {
+            var squareEl = $('#board .square-' + square);
+
+            var background = '#a9a9a9';
+            if (squareEl.hasClass('black-3c85d') === true) {
+                background = '#696969';
+            }
+
+            squareEl.css('background', background);
+        };
+        var onDragStart = function (source, piece, position, orientation) {
+            if (chess.in_checkmate() === true || chess.in_draw() === true || piece.search(/^b/) !== -1) {
+                return false;
+            }
+        };
+        var makeMove = function () {
+            var d = new Date().getTime();
+            var move = minimaxRoot(3, chess, true);
+            var d1 = new Date().getTime();
+            var movetime = d1 - d;
+            console.log(movetime / 1000 + ' seconds to find move');
+            console.log(`actual move ${move}`);
+            chess.move(move);
+            board.position(chess.fen());
+        };
+        var onDrop = function (source, target) {
+            removeGraySquare();
+            // see if the move is legal
+            var move = chess.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+            if (move === null) {
+                return 'snapback';
+            }
+            window.setTimeout(makeMove, 250);
+        };
+        var onSnapEnd = function () {
+            board.position(chess.fen());
+        };
+        var onMouseoverSquare = function (square, piece) {
+            var moves = chess.moves({ square: square, verbose: true });
+            if (moves.length === 0) {
+                return;
+            }
+            graySquare(square);
+            for (var i = 0; i < moves.length; i++) {
+                graySquare(moves[i].to);
+            }
+        }
+        var onMouseoutSquare = function (square, piece) {
+            removeGraySquare();
+        }
+        
+        var config = {
+            draggable: true,
+            position: 'start',
+            
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd,
+            onMouseoutSquare: onMouseoutSquare,
+            onMouseoverSquare: onMouseoverSquare,
+            
+        };
+        board = ChessBoard('board', config);
+ 
+    </script>
+</body>
+</html>
