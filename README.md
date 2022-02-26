@@ -5,4 +5,3 @@ A simple implementation of a minimax algorithm and basic static evaluation funct
 
 # TODO 
 -Because browser speed is limited and the algorithm is quite naive, the bot is not very good. Performance tradeoff between 3-4 move look ahead is too steep (4 move look ahead takes roughly 3 times as long as 3 move, thus I chose to stick with 3 moves). Could optimize the algorithm or implement short circuiting to cut off move calculation at 30 seconds and just use iterative deepening. 
--Improve GUI
