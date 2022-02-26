@@ -11,7 +11,7 @@
     <script type ="text/javascript" src="js/chessboard-0.3.0.js"></script>
     <script type ="text/javascript" src="js/chess.js"></script>
     <script type ="text/javascript" src="js/webchessfunctions.js"></script>
-    <div id="board" style="width:400px"></div>
+    <div id="board" style="margin:auto; width: 450px; padding:20px"></div>
     <script>
         var chess = new Chess();
         var board;
@@ -30,17 +30,24 @@
             squareEl.css('background', background);
         };
         var onDragStart = function (source, piece, position, orientation) {
-            if (chess.in_checkmate() === true || chess.in_draw() === true || piece.search(/^b/) !== -1) {
+            if (chess.in_checkmate()) {
+                document.getElementById('move_console').value += 'You have lost! Please refresh the browser to reset.\n';
+            }
+            if (chess.in_draw() === true || piece.search(/^b/) !== -1) {
                 return false;
             }
         };
         var makeMove = function () {
+            if(chess.in_checkmate()){
+                document.getElementById('move_console').value += 'You have won! Please refresh the browser to reset.\n';
+                return false;
+            }
             var d = new Date().getTime();
             var move = minimaxRoot(3, chess, true);
             var d1 = new Date().getTime();
             var movetime = d1 - d;
-            console.log(movetime / 1000 + ' seconds to find move');
-            console.log(`actual move ${move}`);
+		    document.getElementById('move_console').value += `I moved to: ${move} `+ 'in '+movetime / 1000 + ' seconds.\n';
+            document.getElementById('move_console').scrollTop = document.getElementById('move_console').scrollHeight;
             chess.move(move);
             board.position(chess.fen());
         };
@@ -55,6 +62,7 @@
             if (move === null) {
                 return 'snapback';
             }
+            document.getElementById('move_console').value += 'Thinking...  ';
             window.setTimeout(makeMove, 250);
         };
         var onSnapEnd = function () {
@@ -88,5 +96,6 @@
         board = ChessBoard('board', config);
  
     </script>
+		<textarea id= "move_console" style="display: block; margin: auto; width: 450px; padding: 5px; overflow-y: scroll; resize: none;" rows="5" readonly></textarea>
 </body>
 </html>
