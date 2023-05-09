@@ -64,6 +64,14 @@
             var movetime = d1 - d;
 		    document.getElementById('move_console').value += `I moved to: ${move} `+ 'in '+movetime / 1000 + ' seconds.\n';
             document.getElementById('move_console').scrollTop = document.getElementById('move_console').scrollHeight;
+
+            // get target value to increment black material count
+            let target = move.substr(move.length - 2, move.length); // get last two symbols for location
+            if (chess.get(target) !== null) {
+                blackMaterial += addMaterial(chess.get(target).type);
+                $("#black-material").text(blackMaterial);
+            }
+
             chess.move(move);
             board.position(chess.fen());
         };
@@ -71,9 +79,9 @@
             removeGraySquare();
 
             // if we are capturing a piece
-            let target_value = '';
+            let targetValue = '';
             if (chess.get(target) !== null) {
-                target_value = chess.get(target).type;
+                targetValue = chess.get(target).type;
             }
             // see if the move is legal
             var move = chess.move({
@@ -84,20 +92,9 @@
             if (move === null) {
                 return 'snapback';
             }
-            whiteMaterial += addMaterial(target_value);
+            whiteMaterial += addMaterial(targetValue);
             $("#white-material").text(whiteMaterial);
-
-            // adds amount of material depending on the piece captured
-            function addMaterial(type) {
-                switch(type) {
-                    case 'p': return 1;
-                    case 'n':
-                    case 'b': return 3;
-                    case 'r': return 5;
-                    case 'q': return 9;
-                    default: return 0;
-                }
-            }
+            
             document.getElementById('move_console').value += 'Thinking...  ';
             window.setTimeout(makeMove, 250);
         };
@@ -130,7 +127,18 @@
             
         };
         board = ChessBoard('board', config);
- 
+
+        // helper function that adds amount of material depending on the piece captured
+        function addMaterial(type) {
+            switch(type) {
+                case 'p': return 1;
+                case 'n':
+                case 'b': return 3;
+                case 'r': return 5;
+                case 'q': return 9;
+                default: return 0;
+            }
+        }
     </script>
 		<textarea id= "move_console" style="display: block; margin: auto; width: 450px; padding: 5px; overflow-y: scroll; resize: none;" rows="5" readonly></textarea>
 </body>
