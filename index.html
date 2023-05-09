@@ -5,14 +5,30 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" href="css/chessboard-0.3.0.min.css" />
     <link rel='shortcut icon' type='image/x-icon' href='css/favicon.ico' />
+    <style>
+        #material-counts {
+            position: absolute;
+            top: 20px;
+            right: -100px;
+            width: 100px;
+        }
+    </style>
 </head>
 <body>
     <script type ="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script type ="text/javascript" src="js/chessboard-0.3.0.js"></script>
     <script type ="text/javascript" src="js/chess.js"></script>
     <script type ="text/javascript" src="js/webchessfunctions.js"></script>
+    <div class="material-counter">
+        <p>White Material: <span id="white-material"></span></p>
+        <p>Black Material: <span id="black-material"></span></p>
+    </div>
     <div id="board" style="margin:auto; width: 450px; padding:20px"></div>
     <script>
+        var whiteMaterial = 0;
+        var blackMaterial = 0;
+        $("#white-material").text(whiteMaterial);
+        $("#black-material").text(blackMaterial);
         var chess = new Chess();
         var board;
         
@@ -53,6 +69,12 @@
         };
         var onDrop = function (source, target) {
             removeGraySquare();
+
+            // if we are capturing a piece
+            let target_value = '';
+            if (chess.get(target) !== null) {
+                target_value = chess.get(target).type;
+            }
             // see if the move is legal
             var move = chess.move({
                 from: source,
@@ -61,6 +83,20 @@
             });
             if (move === null) {
                 return 'snapback';
+            }
+            whiteMaterial += addMaterial(target_value);
+            $("#white-material").text(whiteMaterial);
+
+            // adds amount of material depending on the piece captured
+            function addMaterial(type) {
+                switch(type) {
+                    case 'p': return 1;
+                    case 'n':
+                    case 'b': return 3;
+                    case 'r': return 5;
+                    case 'q': return 9;
+                    default: return 0;
+                }
             }
             document.getElementById('move_console').value += 'Thinking...  ';
             window.setTimeout(makeMove, 250);
