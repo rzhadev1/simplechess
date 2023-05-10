@@ -5,14 +5,41 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" href="css/chessboard-0.3.0.min.css" />
     <link rel='shortcut icon' type='image/x-icon' href='css/favicon.ico' />
+    <style>
+        img {
+			width: 50px;
+			height: 50px;
+			object-fit: contain;
+		}
+    </style>
 </head>
 <body>
     <script type ="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script type ="text/javascript" src="js/chessboard-0.3.0.js"></script>
     <script type ="text/javascript" src="js/chess.js"></script>
     <script type ="text/javascript" src="js/webchessfunctions.js"></script>
-    <div id="board" style="margin:auto; width: 450px; padding:20px"></div>
+    <div id="board" style="margin:auto; width: 450px;"></div>
+    <div id="pieces" style="text-align:center"></div>
+    <div style="text-align: center; padding: 20px">Material: <span id="difference"></span></div>
     <script>
+
+        // dictionary for captured pieces
+        const pieceImages = {
+            'p':"img/chesspieces/wikipedia/bP.png",
+            'b':"img/chesspieces/wikipedia/bB.png",
+            'n': "img/chesspieces/wikipedia/bN.png",
+            'r': "img/chesspieces/wikipedia/bR.png",
+            'q': "img/chesspieces/wikipedia/bQ.png"
+        };
+        const capturedPiecesDiv = document.getElementById("pieces");
+        var capturedPieces = [];
+
+        // variables to keep track of the amount of material
+        var whiteMaterial = 0;
+        var blackMaterial = 0;
+        var difference = 0;
+        updateDifference();
+
         var chess = new Chess();
         var board;
         
@@ -48,11 +75,25 @@
             var movetime = d1 - d;
 		    document.getElementById('move_console').value += `I moved to: ${move} `+ 'in '+movetime / 1000 + ' seconds.\n';
             document.getElementById('move_console').scrollTop = document.getElementById('move_console').scrollHeight;
+
+            // get target value to increment black material count
+            let target = move.substr(move.length - 2, move.length); // get last two symbols for location
+            if (chess.get(target) !== null) {
+                blackMaterial += addMaterial(chess.get(target).type);
+                updateDifference();
+            }
+
             chess.move(move);
             board.position(chess.fen());
         };
         var onDrop = function (source, target) {
             removeGraySquare();
+
+            // if we are capturing a piece
+            let targetValue = '';
+            if (chess.get(target) !== null) {
+                targetValue = chess.get(target).type;
+            }
             // see if the move is legal
             var move = chess.move({
                 from: source,
@@ -62,6 +103,19 @@
             if (move === null) {
                 return 'snapback';
             }
+            whiteMaterial += addMaterial(targetValue);
+
+            // adds the piece to the array of captured pieces, and displays it in game
+            if (targetValue !== '') {
+                capturedPieces.push(targetValue);
+                const img = document.createElement("img");
+                console.log(targetValue)
+                img.src = pieceImages[targetValue];
+                capturedPiecesDiv.appendChild(img);
+            }
+            console.log(capturedPieces)
+            updateDifference();
+            
             document.getElementById('move_console').value += 'Thinking...  ';
             window.setTimeout(makeMove, 250);
         };
@@ -94,7 +148,28 @@
             
         };
         board = ChessBoard('board', config);
- 
+
+        // helper function that returns cost of material depending on the piece captured
+        function addMaterial(type) {
+            switch(type) {
+                case 'p': return 1;
+                case 'n':
+                case 'b': return 3;
+                case 'r': return 5;
+                case 'q': return 9;
+                default: return 0;
+            }
+        }
+
+        // helper function to update the difference between white material and black material
+        function updateDifference() {
+            difference = whiteMaterial - blackMaterial;
+            if (difference > 0) {
+                $("#difference").text("+" + difference);
+            } else {
+                $("#difference").text(difference);
+            }
+        }
     </script>
 		<textarea id= "move_console" style="display: block; margin: auto; width: 450px; padding: 5px; overflow-y: scroll; resize: none;" rows="5" readonly></textarea>
 </body>
