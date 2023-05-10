@@ -5,30 +5,22 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" href="css/chessboard-0.3.0.min.css" />
     <link rel='shortcut icon' type='image/x-icon' href='css/favicon.ico' />
-    <style>
-        #material-counts {
-            position: absolute;
-            top: 20px;
-            right: -100px;
-            width: 100px;
-        }
-    </style>
 </head>
 <body>
     <script type ="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script type ="text/javascript" src="js/chessboard-0.3.0.js"></script>
     <script type ="text/javascript" src="js/chess.js"></script>
     <script type ="text/javascript" src="js/webchessfunctions.js"></script>
-    <div class="material-counter">
-        <p>White Material: <span id="white-material"></span></p>
-        <p>Black Material: <span id="black-material"></span></p>
-    </div>
-    <div id="board" style="margin:auto; width: 450px; padding:20px"></div>
+    <div id="board" style="margin:auto; width: 450px;"></div>
+    <div style="text-align: center; padding: 20px">Difference: <span id="difference"></span></div>
+    
     <script>
         var whiteMaterial = 0;
         var blackMaterial = 0;
         $("#white-material").text(whiteMaterial);
         $("#black-material").text(blackMaterial);
+        var difference = 0;
+        updateDifference();
         var chess = new Chess();
         var board;
         
@@ -70,6 +62,7 @@
             if (chess.get(target) !== null) {
                 blackMaterial += addMaterial(chess.get(target).type);
                 $("#black-material").text(blackMaterial);
+                updateDifference();
             }
 
             chess.move(move);
@@ -94,6 +87,7 @@
             }
             whiteMaterial += addMaterial(targetValue);
             $("#white-material").text(whiteMaterial);
+            updateDifference();
             
             document.getElementById('move_console').value += 'Thinking...  ';
             window.setTimeout(makeMove, 250);
@@ -128,7 +122,7 @@
         };
         board = ChessBoard('board', config);
 
-        // helper function that adds amount of material depending on the piece captured
+        // helper function that returns cost of material depending on the piece captured
         function addMaterial(type) {
             switch(type) {
                 case 'p': return 1;
@@ -137,6 +131,16 @@
                 case 'r': return 5;
                 case 'q': return 9;
                 default: return 0;
+            }
+        }
+
+        // helper function to update the difference between white material and black material
+        function updateDifference() {
+            difference = whiteMaterial - blackMaterial;
+            if (difference > 0) {
+                $("#difference").text("+" + difference);
+            } else {
+                $("#difference").text(difference);
             }
         }
     </script>
